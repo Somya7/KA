@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="840" viewBox="0 0 800 840" role="img" aria-label="Ashwagandha root and capsule detail">
+  <defs>
+    <linearGradient id="bg2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8F0E6"/>
+      <stop offset="100%" stop-color="#D9CBB4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="840" fill="url(#bg2)"/>
+  <path d="M180 620 C220 480, 260 420, 320 360 C360 420, 390 520, 410 650" fill="none" stroke="#6B4A2E" stroke-width="28" stroke-linecap="round"/>
+  <path d="M320 360 C360 300, 420 280, 470 320" fill="none" stroke="#8A6240" stroke-width="18" stroke-linecap="round"/>
+  <path d="M300 390 C250 340, 220 300, 210 250" fill="none" stroke="#8A6240" stroke-width="14" stroke-linecap="round"/>
+  <ellipse cx="560" cy="420" rx="90" ry="36" transform="rotate(-28 560 420)" fill="#F4EFE4" stroke="#2F5D3A" stroke-width="3"/>
+  <ellipse cx="560" cy="420" rx="90" ry="36" transform="rotate(-28 560 420)" fill="#2F5D3A" clip-path="inset(0 50% 0 0)"/>
+  <text x="400" y="760" text-anchor="middle" fill="#3D4F44" font-family="Georgia, serif" font-size="28">Root &amp; capsule</text>
+  <text x="400" y="795" text-anchor="middle" fill="#6B7A70" font-family="Arial, sans-serif" font-size="16">Illustrative product detail art</text>
+</svg>

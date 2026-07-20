@@ -1,0 +1,17 @@
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
+name = "Kerala Ayurveda PDP Enhance"
+client_id = "REPLACE_WITH_SHOPIFY_APP_CLIENT_ID"
+application_url = "https://example.com"
+embedded = true
+
+[access_scopes]
+scopes = "write_products,read_products"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]
+
+[webhooks]
+api_version = "2024-10"
+
+[pos]
+embedded = false

@@ -1,0 +1,156 @@
+{% comment %}
+  Kerala Ayurveda PDP Enhancement — Theme App Extension block
+  Merchant-editable settings (Theme Editor):
+  1. quiz_headline
+  2. quiz_cta_label
+  3. disclaimer_copy
+  4. guidance_api_url
+  Product-specific benefits via product metafield: custom.pdp_benefits (list.single_line_text_field or json)
+{% endcomment %}
+
+{% assign product_ref = block.settings.product | default: product %}
+{% if product_ref == blank %}
+  {% assign product_ref = product %}
+{% endif %}
+
+{% assign benefit_metafield = product_ref.metafields.custom.pdp_benefits %}
+{% assign benefits_json = '[]' %}
+{% if benefit_metafield != blank %}
+  {% if benefit_metafield.type == 'json' %}
+    {% assign benefits_json = benefit_metafield.value | json %}
+  {% else %}
+    {% capture benefits_json %}[{% for item in benefit_metafield.value %}"{{ item | escape }}"{% unless forloop.last %},{% endunless %}{% endfor %}]{% endcapture %}
+  {% endif %}
+{% endif %}
+
+<section
+  id="ka-pdp-enhance-{{ block.id }}"
+  class="ka-pdp"
+  data-ka-pdp
+  data-product-handle="{{ product_ref.handle }}"
+  data-product-id="{{ product_ref.id }}"
+  data-api-url="{{ block.settings.guidance_api_url | escape }}"
+  data-quiz-headline="{{ block.settings.quiz_headline | escape }}"
+  data-quiz-cta="{{ block.settings.quiz_cta_label | escape }}"
+  data-disclaimer="{{ block.settings.disclaimer_copy | escape }}"
+  data-benefits='{{ benefits_json }}'
+  {{ block.shopify_attributes }}
+>
+  <div class="ka-pdp__hero">
+    <div class="ka-pdp__media">
+      {% if product_ref.featured_media %}
+        {{
+          product_ref.featured_media
+          | image_url: width: 1200
+          | image_tag:
+            loading: 'eager',
+            sizes: '(min-width: 900px) 50vw, 100vw',
+            widths: '400, 600, 800, 1000, 1200',
+            class: 'ka-pdp__image',
+            alt: product_ref.title
+        }}
+      {% else %}
+        <div class="ka-pdp__image-fallback" aria-hidden="true"></div>
+      {% endif %}
+    </div>
+
+    <div class="ka-pdp__copy">
+      <p class="ka-pdp__vendor">{{ product_ref.vendor }}</p>
+      <h2 class="ka-pdp__title">{{ product_ref.title }}</h2>
+      <p class="ka-pdp__price">
+        <span data-ka-price>{{ product_ref.selected_or_first_available_variant.price | money }}</span>
+      </p>
+      <div class="ka-pdp__description">{{ product_ref.description | strip_html | truncate: 280 }}</div>
+
+      {% form 'product', product_ref, data-ka-product-form: '' %}
+        <input type="hidden" name="id" value="{{ product_ref.selected_or_first_available_variant.id }}" data-ka-variant-input>
+        <fieldset class="ka-pdp__variants">
+          <legend>Pack / variant</legend>
+          <div class="ka-pdp__variant-row">
+            {% for variant in product_ref.variants %}
+              <button
+                type="button"
+                class="ka-pdp__variant{% if variant == product_ref.selected_or_first_available_variant %} is-selected{% endif %}{% unless variant.available %} is-unavailable{% endunless %}"
+                data-ka-variant
+                data-variant-id="{{ variant.id }}"
+                data-variant-price="{{ variant.price | money }}"
+                data-available="{{ variant.available }}"
+                {% unless variant.available %}disabled{% endunless %}
+              >
+                <span>{{ variant.title }}</span>
+                <span class="ka-pdp__variant-price">{{ variant.price | money }}</span>
+              </button>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="ka-pdp__actions">
+          <input class="ka-pdp__qty" type="number" name="quantity" min="1" value="1" aria-label="Quantity">
+          <button type="submit" class="ka-pdp__atc" data-ka-atc {% unless product_ref.selected_or_first_available_variant.available %}disabled{% endunless %}>
+            <span data-ka-atc-label>Add to cart</span>
+            <span class="ka-pdp__spinner" data-ka-spinner hidden></span>
+          </button>
+        </div>
+        <p class="ka-pdp__cart-msg" data-ka-cart-msg hidden></p>
+      {% endform %}
+    </div>
+  </div>
+
+  <div class="ka-pdp__benefits" data-ka-benefits>
+    <h3>Why people choose this</h3>
+    <ul data-ka-benefits-list></ul>
+  </div>
+
+  <div class="ka-pdp__quiz" data-ka-quiz>
+    <p class="ka-pdp__eyebrow">Decision support</p>
+    <h3 data-ka-quiz-headline>{{ block.settings.quiz_headline }}</h3>
+    <p class="ka-pdp__lede">Four short questions for fit, routine, and pack guidance—not medical advice.</p>
+    <div class="ka-pdp__progress"><span data-ka-progress style="width:0%"></span></div>
+    <div data-ka-quiz-body>
+      <button type="button" class="ka-pdp__start" data-ka-start>{{ block.settings.quiz_cta_label }}</button>
+      <p class="ka-pdp__disclaimer">{{ block.settings.disclaimer_copy }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "KA PDP Enhance",
+  "target": "section",
+  "stylesheet": "pdp-enhance.css",
+  "javascript": "pdp-enhance.js",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Defaults to the current product on product templates."
+    },
+    {
+      "type": "text",
+      "id": "quiz_headline",
+      "label": "Quiz headline",
+      "default": "Is this right for me?"
+    },
+    {
+      "type": "text",
+      "id": "quiz_cta_label",
+      "label": "Quiz CTA label",
+      "default": "Find my fit"
+    },
+    {
+      "type": "textarea",
+      "id": "disclaimer_copy",
+      "label": "Disclaimer copy",
+      "default": "Wellness guidance only—not medical advice, diagnosis, or treatment. Consult a healthcare professional before use."
+    },
+    {
+      "type": "text",
+      "id": "guidance_api_url",
+      "label": "Guidance API URL",
+      "default": "https://YOUR_DEPLOYMENT.example.com/api/guidance",
+      "info": "POST endpoint that returns personalized guidance. Keep secrets on the server."
+    }
+  ]
+}
+{% endschema %}

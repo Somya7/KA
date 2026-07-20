@@ -1,0 +1,4 @@
+# Learn more about configuring your Shopify theme app extension at https://shopify.dev/docs/apps/online-store/theme-app-extensions/extensions-files
+name = "pdp-enhance"
+type = "theme"
+uid = "pdp-enhance-kerala-ayurveda-demo"
