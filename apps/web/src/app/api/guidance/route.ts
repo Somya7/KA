@@ -6,26 +6,65 @@ import type { GuidanceResponse } from "@/lib/guidance/types";
 
 export const runtime = "nodejs";
 
+/**
+ * Shopify storefronts call this API cross-origin.
+ * Allow browser POSTs from any storefront origin (public guidance endpoint).
+ */
+function corsHeaders(request?: NextRequest): HeadersInit {
+  const origin = request?.headers.get("origin") || "*";
+  return {
+    "Access-Control-Allow-Origin": origin === "null" ? "*" : origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Accept",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
+  };
+}
+
+function jsonWithCors(
+  body: unknown,
+  init: { status?: number; headers?: HeadersInit },
+  request?: NextRequest
+) {
+  return NextResponse.json(body, {
+    status: init.status ?? 200,
+    headers: {
+      "Cache-Control": "no-store",
+      ...corsHeaders(request),
+      ...init.headers,
+    },
+  });
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(request),
+  });
+}
+
 export async function POST(request: NextRequest) {
   let json: unknown;
   try {
     json = await request.json();
   } catch {
-    return NextResponse.json(
+    return jsonWithCors(
       { error: "Invalid JSON body", code: "INVALID_JSON" },
-      { status: 400 }
+      { status: 400 },
+      request
     );
   }
 
   const parsed = guidanceRequestSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json(
+    return jsonWithCors(
       {
         error: "Validation failed",
         code: "VALIDATION_ERROR",
         details: parsed.error.flatten(),
       },
-      { status: 400 }
+      { status: 400 },
+      request
     );
   }
 
@@ -40,19 +79,15 @@ export async function POST(request: NextRequest) {
       source: usedAi ? "rules+ai" : "rules",
     };
 
-    return NextResponse.json(response, {
-      status: 200,
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    });
+    return jsonWithCors(response, { status: 200 }, request);
   } catch {
-    return NextResponse.json(
+    return jsonWithCors(
       {
         error: "Unable to generate guidance right now",
         code: "GUIDANCE_FAILED",
       },
-      { status: 500 }
+      { status: 500 },
+      request
     );
   }
 }
